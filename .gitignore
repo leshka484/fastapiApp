@@ -1,0 +1,8 @@
+.vscode
+.pytest_cache
+/alembic/
+alembic.ini
+app/.env
+app/__pycache__/
+app/.pytest_cache/
+venv/

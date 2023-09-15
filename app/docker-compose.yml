@@ -1,0 +1,14 @@
+version: '0'
+services:
+  fastapi:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+
+  database:
+    image: 'postgres'
+    env_file:
+      - .env
+
