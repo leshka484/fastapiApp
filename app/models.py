@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import date
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -14,6 +15,7 @@ class User(Base):
     disabled = Column(Boolean, default=False)
     publications = relationship("Publication", back_populates="owner")
 
+
 class Publication(Base):
     __tablename__ = "publications"
 
@@ -23,17 +25,24 @@ class Publication(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
     publication_date = Column(Date)
     owner = relationship("User", back_populates="publications")
-    tags = relationship("Tags",secondary="publications_tags", back_populates="publications")
+    tags = relationship(
+        "Tags", secondary="publications_tags", back_populates="publications"
+    )
 
 
-publications_tags = Table('publications_tags', Base.metadata,
-    Column("publication_id", ForeignKey("publications.id"), primary_key=True), 
-    Column("tag_id", ForeignKey("tags.id"), primary_key=True)
-)   
+publications_tags = Table(
+    "publications_tags",
+    Base.metadata,
+    Column("publication_id", ForeignKey("publications.id"), primary_key=True),
+    Column("tag_id", ForeignKey("tags.id"), primary_key=True),
+)
+
 
 class Tags(Base):
     __tablename__ = "tags"
-    
+
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
-    publications = relationship("Publication",secondary="publications_tags", back_populates="tags")
+    publications = relationship(
+        "Publication", secondary="publications_tags", back_populates="tags"
+    )

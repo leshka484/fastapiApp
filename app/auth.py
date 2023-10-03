@@ -1,7 +1,7 @@
 import datetime
 import os
 from fastapi import Depends, HTTPException, Query, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
@@ -12,25 +12,31 @@ from app import models
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-SECRET_KEY = os.environ.get("SECRET_KEY")  
-ALGORITHM = os.environ.get("ALGORITHM")  
-ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")  
+SECRET_KEY = os.environ.get("SECRET_KEY")
+ALGORITHM = os.environ.get("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
+
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     username: str | None = None
+
 
 def get_user_by_name(db: Session, user_name: str):
     return db.query(models.User).filter(models.User.name == user_name).first()
 
+
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
+
 def get_password_hash(password):
     return pwd_context.hash(password)
+
 
 def authenticate_user(db: Query, user_name: str, password: str):
     user = get_user_by_name(db=db, user_name=user_name)
@@ -39,6 +45,7 @@ def authenticate_user(db: Query, user_name: str, password: str):
     if not verify_password(password, user.hashed_password):
         return False
     return user
+
 
 def create_access_token(data: dict, expires_delta: datetime.timedelta | None = None):
     to_encode = data.copy()
@@ -49,6 +56,7 @@ def create_access_token(data: dict, expires_delta: datetime.timedelta | None = N
     to_encode.update({"exp": expire})
     encoded_jwt = JWTError.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
 
 def get_current_user(db: Query, token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
@@ -68,6 +76,7 @@ def get_current_user(db: Query, token: str = Depends(oauth2_scheme)):
     if user is None:
         raise credentials_exception
     return user
+
 
 def get_current_active_user(current_user: User = Depends(get_current_user)):
     if current_user.disabled:
